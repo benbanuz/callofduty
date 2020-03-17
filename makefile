@@ -1,0 +1,3 @@
+#!make
+
+test: npm test
