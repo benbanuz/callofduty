@@ -71,4 +71,107 @@ describe("duties api", function () {
       };
     });
   });
+
+  describe("dutie GET", function () {
+    it("should return all duties in db when a get request is sent to the /duties url", function (doneIt) {
+      const Http = new XMLHttpRequest();
+      Http.open("GET", url);
+      Http.send();
+      Http.onreadystatechange = (e) => {
+        if (Http.readyState == 4 && Http.status == 200) {
+          MongoClient.connect(mongoUrl, function (err, client) {
+            const db = client.db(dbName);
+            const collection = db.collection('duties');
+            collection.find({}).toArray(function (err, result) {
+              expect(Http.responseText).to.eql(JSON.stringify(result));
+              client.close();
+              doneIt();
+            });
+          });
+        }
+      };
+    });
+
+    it("should return a spesific dutie json when recieving a get request to url /duties/[id]", function (doneIt) {
+      const Http = new XMLHttpRequest();
+      MongoClient.connect(mongoUrl, function (err, client) {
+        const db = client.db(dbName);
+        const collection = db.collection('duties');
+        collection.insertOne({
+            "name": "hagnash",
+            "location": "soosia",
+            "days": "7",
+            "constraints": "none",
+            "soldiersRequired": "2",
+            "value": "10"
+          },
+          function (err, resultInsert) {
+            Http.open("GET", url + "/" + resultInsert["insertedId"].toString());
+            Http.send();
+            Http.onreadystatechange = (e) => {
+              if (Http.readyState == 4 && Http.status == 200) {
+                collection.find({
+                  "_id": resultInsert["insertedId"]
+                }).toArray(function (err, result) {
+                  expect(Http.responseText).to.eql(JSON.stringify(result[0]));
+                  collection.deleteOne({
+                    "_id": resultInsert["insertedId"]
+                  }, function (err, resultDelete) {
+                    client.close();
+                    doneIt();
+                  });
+                });
+              }
+            };
+          });
+      });
+    });
+
+    it("should return err when getting a get request for dutie that doesnt exist", function (doneIt) {
+      const Http = new XMLHttpRequest();
+      Http.open("GET", url + "/333333333333333333333333");
+      Http.send();
+      Http.onreadystatechange = (e) => {
+        if (Http.readyState == 4 && Http.status == 400) {
+          expect(Http.responseText).to.eql("no dutie that answers the given parameters has been found");
+          doneIt();
+        }
+      };
+    });
+
+    it("should return a spesific duties json when recieving a get request to url /duties?name='name'", function (doneIt) {
+      const Http = new XMLHttpRequest();
+      MongoClient.connect(mongoUrl, function (err, client) {
+        const db = client.db(dbName);
+        const collection = db.collection('duties');
+        collection.insertOne({
+          "name": "hagnash",
+          "location": "soosia",
+          "days": "7",
+          "constraints": "none",
+          "soldiersRequired": "2",
+          "value": "10"
+        }, function (err, resultInsert) {
+          Http.open("GET", url + "?name=hagnash");
+          Http.send();
+          Http.onreadystatechange = (e) => {
+            if (Http.readyState == 4 && Http.status == 200) {
+              collection.find({
+                "name": "hagnash"
+              }).toArray(function (err, result) {
+                expect(Http.responseText).to.eql(JSON.stringify(result));
+                collection.deleteOne({
+                  "_id": resultInsert["insertedId"]
+                }, function (err, resultDelete) {
+                  client.close();
+                  doneIt();
+                });
+              });
+            }
+          };
+        });
+      });
+    });
+  });
+
 });

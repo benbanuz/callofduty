@@ -28,4 +28,41 @@ function newDutie(data, callback) {
   }
 }
 
+function getDutie(name, id, callback) {
+  if (!id || (id && /[0-9a-fA-F]{24}/.test(id))) {
+    MongoClient.connect(url, function (err, client) {
+      assert.equal(null, err);
+      const db = client.db(dbName);
+      const collection = db.collection('duties');
+
+      let searchedParams = {};
+
+      if (name) {
+        searchedParams["name"] = name;
+      }
+
+      if (id) {
+        searchedParams["_id"] = ObjectId(id);
+      }
+
+      collection.find(searchedParams).toArray(function (err, docs) {
+        assert.equal(err, null);
+        if (docs.length <= 0 && (name || id)) {
+          client.close();
+          callback("no dutie that answers the given parameters has been found", null);
+        } else if (name || (!(name) && !(id))) {
+          client.close();
+          callback(err, JSON.stringify(docs));
+        } else {
+          client.close();
+          callback(err, JSON.stringify(docs[0]));
+        }
+      });
+    });
+  } else {
+    callback("thats an ileagal id for a dutie", null);
+  }
+}
+
 module.exports.newDutie = newDutie;
+module.exports.getDutie = getDutie;
