@@ -1,13 +1,4 @@
-const MongoClient = require('mongodb').MongoClient;
-const assert = require('assert');
-const configs = require('../config');
 const utils = require("../utility/utility");
-
-// Connection URL
-const url = configs.dbUrl;
-
-// Database Name
-const dbName = configs.dbName;
 
 // Use connect method to connect to the server
 function newSoldier(data) {
@@ -47,4 +38,25 @@ function newSoldier(data) {
   });
 }
 
+function getSoldier(name, id) {
+  const collection = require("../start").soldiersCollecetion;
+  const resHandler = require("../start").server.getResHandler();
+  let searchedParams = {};
+
+  utils.setParamsForSearch(searchedParams,["name","id"],[name,id]);
+
+  collection.find(searchedParams).toArray(function (err, docs) {
+    let isAdditionalParams = (name || id);
+
+    if (docs.length <= 0 && isAdditionalParams) {
+      resHandler.routeNotFound("no soldier that answers the given parameters has been found");
+    } else if (name || !isAdditionalParams) {
+      resHandler.success(JSON.stringify(docs));
+    } else {
+      resHandler.success(JSON.stringify(docs[0]));
+    }
+  });
+}
+
 module.exports.newSoldier = newSoldier;
+module.exports.getSoldier = getSoldier;
