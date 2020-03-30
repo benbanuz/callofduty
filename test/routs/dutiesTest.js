@@ -4,6 +4,7 @@ const mongoServer = require("../../start").server;
 const XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
 const expect = require('chai').expect;
 const MongoClient = require('mongodb').MongoClient;
+const ObjectId = require("mongodb").ObjectID;
 
 // Connection URL
 const mongoUrl = 'mongodb://localhost:27017';
@@ -225,6 +226,177 @@ describe("duties api", function () {
           doneIt();
         }
       };
+    });
+
+  });
+
+  describe("dutie PATCH", function () {
+
+    it("should update a spesific duties json when recieving a patch request to url /duties/[id]", function (doneIt) {
+      const Http = new XMLHttpRequest();
+      MongoClient.connect(mongoUrl, function (err, client) {
+        const db = client.db(dbName);
+        const collection = db.collection('duties');
+        collection.insertOne({
+          "name": "hagnash",
+          "location": "soosia",
+          "days": "7",
+          "constraints": "none",
+          "soldiersRequired": "2",
+          "value": "10",
+          "soldiers": []
+        }, function (err, resultInsert) {
+          Http.open("PATCH", url + "/" + resultInsert["insertedId"].toString());
+          Http.send(JSON.stringify({
+            "name": "haha i changed the name",
+          }));
+          Http.onreadystatechange = (e) => {
+            if (Http.readyState == 4 && Http.status == 200) {
+              collection.find({
+                "_id": resultInsert["insertedId"]
+              }).toArray(function (err, result) {
+                expect("haha i changed the name").to.eql(result[0]["name"]);
+                collection.deleteOne({
+                  "_id": resultInsert["insertedId"]
+                }, function (err, resultDelete) {
+                  client.close();
+                  doneIt();
+                });
+              });
+            }
+          };
+        });
+      });
+    });
+
+    it("should return an err when recieving a patch request to the url duties/[id] to a not existing dutie", function (doneIt) {
+      const Http = new XMLHttpRequest();
+      Http.open("PATCH", url + "/333333333333333333333333");
+      Http.send();
+      Http.onreadystatechange = (e) => {
+        if (Http.readyState == 4 && Http.status == 400) {
+          expect(Http.responseText).to.eql("dutie cannot be updated");
+          doneIt();
+        }
+      };
+    });
+
+    it("should return an err and not update the dutie json when recieving a patch request to the url duties/[id] with not a valid property", function (doneIt) {
+      const Http = new XMLHttpRequest();
+      MongoClient.connect(mongoUrl, function (err, client) {
+        const db = client.db(dbName);
+        const collection = db.collection('duties');
+        collection.insertOne({
+          "name": "hagnash",
+          "location": "soosia",
+          "days": "7",
+          "constraints": "none",
+          "soldiersRequired": "2",
+          "value": "10",
+          "soldiers": []
+        }, function (err, resultInsert) {
+          Http.open("PATCH", url + "/" + resultInsert["insertedId"].toString());
+          Http.send(JSON.stringify({
+            "notValid": "haha cant change the name",
+          }));
+          Http.onreadystatechange = (e) => {
+            if (Http.readyState == 4 && Http.status == 400) {
+              collection.find({
+                "_id": resultInsert["insertedId"]
+              }).toArray(function (err, result) {
+                expect(Http.responseText).to.eql("ileagal properties to update");
+                expect(!(result[0]["notValid"])).to.eql(true);
+                collection.deleteOne({
+                  "_id": resultInsert["insertedId"]
+                }, function (err, resultDelete) {
+                  client.close();
+                  doneIt();
+                });
+              });
+            }
+          };
+        });
+      });
+    });
+
+    it("should return an err and not update the dutie json when recieving a patch request to the url duties/[id] with _id property", function (doneIt) {
+      const Http = new XMLHttpRequest();
+      MongoClient.connect(mongoUrl, function (err, client) {
+        const db = client.db(dbName);
+        const collection = db.collection('duties');
+        collection.insertOne({
+          "name": "hagnash",
+          "location": "soosia",
+          "days": "7",
+          "constraints": "none",
+          "soldiersRequired": "2",
+          "value": "10",
+          "soldiers": []
+        }, function (err, resultInsert) {
+          Http.open("PATCH", url + "/" + resultInsert["insertedId"].toString());
+          Http.send(JSON.stringify({
+            "_id": "333333333333333333333333",
+          }));
+          Http.onreadystatechange = (e) => {
+            if (Http.readyState == 4 && Http.status == 400) {
+              collection.find({
+                "_id": resultInsert["insertedId"]
+              }).toArray(function (err, result) {
+                expect(result.length > 0).to.eql(true);
+                expect(Http.responseText).to.eql("ileagal properties to update");
+                let idToDelete = resultInsert["insertedId"];
+                if (result.length == 0) {
+                  idToDelete = ObjectId("333333333333333333333333");
+                }
+                collection.deleteOne({
+                  "_id": idToDelete
+                }, function (err, resultDelete) {
+                  client.close();
+                  doneIt();
+                });
+              });
+            }
+          };
+        });
+      });
+    });
+
+    it("should return an err and not update the dutie json when recieving a patch request to the url duties/[id] to a scheduled dutie", function (doneIt) {
+      const Http = new XMLHttpRequest();
+      MongoClient.connect(mongoUrl, function (err, client) {
+        const db = client.db(dbName);
+        const collection = db.collection('duties');
+        collection.insertOne({
+          "name": "hagnash",
+          "location": "soosia",
+          "days": "7",
+          "constraints": "none",
+          "soldiersRequired": "2",
+          "value": "10",
+          "soldiers": ["8411494"]
+        }, function (err, resultInsert) {
+          Http.open("PATCH", url + "/" + resultInsert["insertedId"].toString());
+          Http.send(JSON.stringify({
+            "name": "haha cant change the name",
+          }));
+          Http.onreadystatechange = (e) => {
+            if (Http.readyState == 4 && Http.status == 400) {
+              collection.find({
+                "_id": resultInsert["insertedId"]
+              }).toArray(function (err, result) {
+                expect(Http.responseText).to.eql("dutie cannot be updated");
+                expect(result[0]["name"]).to.eql("hagnash");
+                collection.deleteOne({
+                  "_id": resultInsert["insertedId"]
+                }, function (err, resultDelete) {
+                  client.close();
+                  doneIt();
+                });
+              });
+            }
+          };
+        });
+      });
     });
 
   });
