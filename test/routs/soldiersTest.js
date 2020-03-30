@@ -167,4 +167,83 @@ describe("soldiers api", function () {
     });
 
   });
+
+  describe("soldier GET", function () {
+    it("should return all soldiers in db when a get request is sent to the /soldiers url", function (done) {
+      const Http = new XMLHttpRequest();
+      const collection = db.collection('soldiers');
+
+      collection.insertMany(testData["getSoldierTestData"]["getAll"], function (err, result) {
+        Http.open("GET", url);
+        Http.send();
+        Http.onreadystatechange = (e) => {
+          if (Http.readyState == 4 && Http.status == 200) {
+            collection.find({}).toArray(function (err, result) {
+              expect(Http.responseText).to.eql(JSON.stringify(result));
+              done();
+            });
+          }
+        };
+      });
+    });
+
+    it("should return a spesific soldiers json when recieving a get request to url /soldiers/[id]", function (done) {
+      const Http = new XMLHttpRequest();
+      const collection = db.collection('soldiers');
+      collection.insertOne(testData["getSoldierTestData"]["getById"], function (err, resultInsert) {
+        Http.open("GET", url + "/" + testData["getSoldierTestData"]["getById"]["id"]);
+        Http.send();
+        Http.onreadystatechange = (e) => {
+          if (Http.readyState == 4 && Http.status == 200) {
+            collection.find({
+              "id": testData["getSoldierTestData"]["getById"]["id"]
+            }).toArray(function (err, result) {
+              expect(Http.responseText).to.eql(JSON.stringify(result[0]));
+              collection.deleteOne({
+                "id": testData["getSoldierTestData"]["getById"]["id"]
+              }, function (err, resultDelete) {
+                done();
+              });
+            });
+          }
+        };
+      });
+    });
+
+    it("should return err when getting a get request for soldier that doesnt exist", function (done) {
+      const Http = new XMLHttpRequest();
+      Http.open("GET", url + testData["getSoldierTestData"]["getByIdErr"]);
+      Http.send();
+      Http.onreadystatechange = (e) => {
+        if (Http.readyState == 4 && Http.status == 404) {
+          expect(Http.responseText).to.eql("no soldier that answers the given parameters has been found");
+          done();
+        }
+      };
+    });
+
+    it("should return a spesific soldiers json when recieving a get request to url /soldiers?name='name'", function (done) {
+      const Http = new XMLHttpRequest();
+      const collection = db.collection('soldiers');
+      collection.insertOne(testData["getSoldierTestData"]["getByName"], function (err, resultInsert) {
+        Http.open("GET", url + "?name=" + testData["getSoldierTestData"]["getByName"]["name"]);
+        Http.send();
+        Http.onreadystatechange = (e) => {
+          if (Http.readyState == 4 && Http.status == 200) {
+            collection.find({
+              "name": testData["getSoldierTestData"]["getByName"]["name"]
+            }).toArray(function (err, result) {
+              expect(Http.responseText).to.eql(JSON.stringify(result));
+              collection.deleteOne({
+                "id": testData["getSoldierTestData"]["getByName"]["id"]
+              }, function (err, resultDelete) {
+                done();
+              });
+            });
+          }
+        };
+      });
+    });
+
+  });
 });
