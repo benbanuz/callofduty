@@ -28,4 +28,34 @@ function newDutie(data, callback) {
   }
 }
 
+function getDutie(name, id, callback) {
+  MongoClient.connect(url, function (err, client) {
+    assert.equal(null, err);
+    const db = client.db(dbName);
+    const collection = db.collection('duties');
+
+    let searchedParams = {};
+
+    if (name) {
+      searchedParams["name"] = name;
+    }
+
+    if (id) {
+      searchedParams["_id"] = ObjectId(id);
+    }
+
+    collection.find(searchedParams).toArray(function (err, docs) {
+      assert.equal(err, null);
+      if (name || (!(name) && !(id))) {
+        client.close();
+        callback(err, JSON.stringify(docs));
+      } else {
+        client.close();
+        callback(err, JSON.stringify(docs[0]));
+      }
+    });
+  });
+}
+
 module.exports.newDutie = newDutie;
+module.exports.getDutie = getDutie;
