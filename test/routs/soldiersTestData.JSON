@@ -51,5 +51,31 @@
       "limitations": ["yeshiva"],
       "shoeSize": "43"
     }
+  },
+  "getSoldierTestData": {
+    "getAll": [{
+      "id": "8145643",
+      "name": "john",
+      "rank": "segen",
+      "limitations": ["yeshiva"]
+    }, {
+      "id": "8145642",
+      "name": "john",
+      "rank": "segen",
+      "limitations": ["yeshiva"]
+    }],
+    "getById": {
+      "id": "8145643",
+      "name": "john",
+      "rank": "segen",
+      "limitations": ["yeshiva"]
+    },
+    "getByIdErr": "/3333333",
+    "getByName": {
+      "id": "8145643",
+      "name": "john",
+      "rank": "segen",
+      "limitations": ["yeshiva"]
+    }
   }
 }
