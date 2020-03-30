@@ -244,7 +244,7 @@ describe("duties api", function () {
 
     it("should return err when getting a get request for dutie with ileagal id", function (done) {
       const Http = new XMLHttpRequest();
-      Http.open("GET", new URL(path.join(url.toString(),testData["getDutieTestData"]["dutieIdNotLegal"])));
+      Http.open("GET", new URL(path.join(url.toString(), testData["getDutieTestData"]["dutieIdNotLegal"])));
       Http.send();
       Http.onreadystatechange = (e) => {
         if (Http.readyState == 4 && Http.status == 404) {
@@ -265,6 +265,70 @@ describe("duties api", function () {
               "name": testData["getDutieTestData"]["getByName"]["name"]
             }).toArray(function (err, result) {
               expect(Http.responseText).to.eql(JSON.stringify(result));
+              done();
+            });
+          }
+        };
+      });
+    });
+
+  });
+
+  describe("dutie DELETE", function () {
+    it("should delete spesific dutie json when recieving a DELETE  request to url /duties/id", function (done) {
+      const Http = new XMLHttpRequest();
+      dutiesCollection.insertOne(testData["deleteDutieTestData"]["testSuccess"], function (err, resultInsert) {
+        Http.open("DELETE", new URL(path.join(url.toString(), resultInsert["insertedId"].toString())));
+        Http.send();
+        Http.onreadystatechange = (e) => {
+          if (Http.readyState == 4 && Http.status == 200) {
+            dutiesCollection.find({
+              "_id": resultInsert["insertedId"]
+            }).toArray(function (err, result) {
+              expect(result.length).to.eql(0);
+              done();
+            });
+          }
+        };
+      });
+    });
+
+    it("should return correct response when getting a DELETE request for dutie that doesnt exist", function (done) {
+      const Http = new XMLHttpRequest();
+      Http.open("DELETE", new URL(path.join(url.toString(), testData["deleteDutieTestData"]["testDutieNotExist"])));
+      Http.send();
+      Http.onreadystatechange = (e) => {
+        if (Http.readyState == 4 && Http.status == 200) {
+          expect(Http.responseText).to.eql("the referenced dutie already deleted");
+          done();
+        }
+      };
+    });
+
+    it("should return err when getting a DELETE with ilegal id", function (done) {
+      const Http = new XMLHttpRequest();
+      Http.open("DELETE", new URL(path.join(url.toString(), testData["deleteDutieTestData"]["testIdNotLegal"])));
+      Http.send();
+      Http.onreadystatechange = (e) => {
+        if (Http.readyState == 4 && Http.status == 404) {
+          expect(Http.responseText).to.eql("the id that was sent is not legal, it needs to be of 24 chars in alpha-numeric");
+          done();
+        }
+      };
+    });
+
+    it("should not delete a dutie that is already assigned when recieving a DELETE  request to url /duties/id", function (done) {
+      const Http = new XMLHttpRequest();
+      dutiesCollection.insertOne(testData["deleteDutieTestData"]["testDutyIsAssigned"], function (err, resultInsert) {
+        Http.open("DELETE", new URL(path.join(url.toString(), resultInsert["insertedId"].toString())));
+        Http.send();
+        Http.onreadystatechange = (e) => {
+          if (Http.readyState == 4 && Http.status == 400) {
+            dutiesCollection.find({
+              "_id": resultInsert["insertedId"]
+            }).toArray(function (err, result) {
+              expect(result.length).to.eql(1);
+              expect(Http.responseText).to.eql("dutie cannot be deleted beacuse its already assigned");
               done();
             });
           }

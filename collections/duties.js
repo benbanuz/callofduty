@@ -56,5 +56,34 @@ function getDutie(name, id) {
   });
 }
 
+function deleteDutie(id) {
+  const resHandler = require("../start").server.getResHandler();
+  const collection = require("../start").dutiesCollection;
+
+  if (utils.isIdLegal(id, resHandler)) {
+    return;
+  }
+
+  let searchedParams = {
+    "_id": objectId(id)
+  };
+
+  collection.find(searchedParams).toArray(function (err, doc) {
+    let isDutieExists = (doc.length == 1);
+    let isDutieDeletable = isDutieExists && (doc[0]["soldiers"].length == 0);
+
+    if (isDutieDeletable) {
+      collection.deleteOne(searchedParams, function (err, result) {
+        resHandler.success();
+      });
+    } else if (isDutieExists && !isDutieDeletable) {
+      resHandler.notValidData("dutie cannot be deleted beacuse its already assigned");
+    } else {
+      resHandler.success("the referenced dutie already deleted");
+    }
+  });
+}
+
 module.exports.newDutie = newDutie;
 module.exports.getDutie = getDutie;
+module.exports.deleteDutie = deleteDutie;
