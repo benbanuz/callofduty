@@ -1,0 +1,55 @@
+{
+  "insertSoldierTestData": {
+    "testSuccess": {
+      "id": "8145643",
+      "name": "lior",
+      "rank": "segen",
+      "limitations": ["yeshiva"]
+    },
+    "testNoNameErr": {
+      "id": "8145643",
+      "rank": "segen",
+      "limitations": ["yeshiva"]
+    },
+    "testNoRankErr": {
+      "id": "8145643",
+      "name": "lior",
+      "limitations": ["yeshiva"]
+    },
+    "testNoLimitations": {
+      "id": "8145643",
+      "name": "lior",
+      "rank": "segen"
+    },
+    "testNoId": {
+      "name": "lior",
+      "rank": "segen",
+      "limitations": ["yeshiva"]
+    },
+    "testBadId": {
+      "id": "814564",
+      "name": "lior",
+      "rank": "segen",
+      "limitations": ["yeshiva"]
+    },
+    "testBadId2": {
+      "id": "81A5643",
+      "name": "lior",
+      "rank": "segen",
+      "limitations": ["yeshiva"]
+    },
+    "testBadLimitations": {
+      "id": "8145643",
+      "name": "lior",
+      "rank": "segen",
+      "limitations": "yeshiva"
+    },
+    "testExtraFields": {
+      "id": "8145643",
+      "name": "lior",
+      "rank": "segen",
+      "limitations": ["yeshiva"],
+      "shoeSize": "43"
+    }
+  }
+}
