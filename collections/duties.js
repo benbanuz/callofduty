@@ -1,3 +1,6 @@
+const objectId = require("mongodb").ObjectId;
+const utils = require("../utility/utility");
+
 function newDutie(data) {
   const collection = require("../start").dutiesCollection;
   const resHandler = require("../start").server.getResHandler();
@@ -30,4 +33,28 @@ function newDutie(data) {
   });
 }
 
+function getDutie(name, id) {
+  const collection = require("../start").dutiesCollection;
+  const resHandler = require("../start").server.getResHandler();
+  let searchedParams = {};
+
+  if (utils.isIdLegal(id, resHandler)) {
+    return;
+  }
+
+  utils.setParamsForSearch(searchedParams, ["name", "_id"], [name, utils.myObjectId(id)]);
+
+  collection.find(searchedParams).toArray(function (err, docs) {
+    let isAdditionalParams = (name || id);
+    if (docs.length <= 0 && isAdditionalParams) {
+      resHandler.routeNotFound("no duty that answers the given parameters has been found");
+    } else if (id) {
+      resHandler.success(JSON.stringify(docs[0]));
+    } else {
+      resHandler.success(JSON.stringify(docs));
+    }
+  });
+}
+
 module.exports.newDutie = newDutie;
+module.exports.getDutie = getDutie;

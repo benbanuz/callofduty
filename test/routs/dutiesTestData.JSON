@@ -67,5 +67,40 @@
       "value": "20",
       "shoeSize": "43"
     }
+  },
+  "getDutieTestData": {
+    "getAll": [{
+      "name": "hagnash",
+      "location": "soosia",
+      "days": "7",
+      "constraints": "none",
+      "soldiersRequired": "2",
+      "value": "10"
+    }, {
+      "name": "toranot anaf",
+      "location": "mbt",
+      "days": "1",
+      "constraints": "none",
+      "soldiersRequired": "2",
+      "value": "2"
+    }],
+    "getById": {
+      "name": "hagnash",
+      "location": "soosia",
+      "days": "7",
+      "constraints": "none",
+      "soldiersRequired": "2",
+      "value": "10"
+    },
+    "dutieIdNotExists": "/333333333333333333333333",
+    "dutieIdNotLegal": "/banana",
+    "getByName": {
+      "name": "hagnash",
+      "location": "soosia",
+      "days": "7",
+      "constraints": "none",
+      "soldiersRequired": "2",
+      "value": "10"
+    }
   }
 }

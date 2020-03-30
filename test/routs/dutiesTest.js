@@ -194,4 +194,84 @@ describe("duties api", function () {
     });
 
   });
+
+  describe("dutie GET", function () {
+    it("should return all duties in db when a get request is sent to the /duties url", function (done) {
+      const Http = new XMLHttpRequest();
+      dutiesCollection.insertMany(testData["getDutieTestData"]["getAll"], function (err, result) {
+        Http.open("GET", url);
+        Http.send();
+        Http.onreadystatechange = (e) => {
+          if (Http.readyState == 4 && Http.status == 200) {
+            dutiesCollection.find({}).toArray(function (err, result) {
+              expect(Http.responseText).to.eql(JSON.stringify(result));
+              done();
+            });
+          }
+        };
+      });
+    });
+
+    it("should return a spesific dutie json when recieving a get request to url /duties/[id]", function (done) {
+      const Http = new XMLHttpRequest();
+      dutiesCollection.insertOne(testData["getDutieTestData"]["getById"], function (err, resultInsert) {
+        Http.open("GET", new URL(path.join(url.toString(), resultInsert["insertedId"].toString())));
+        Http.send();
+        Http.onreadystatechange = (e) => {
+          if (Http.readyState == 4 && Http.status == 200) {
+            dutiesCollection.find({
+              "_id": resultInsert["insertedId"]
+            }).toArray(function (err, result) {
+              expect(Http.responseText).to.eql(JSON.stringify(result[0]));
+              done();
+            });
+          }
+        };
+      });
+    });
+
+    it("should return err when getting a get request for dutie that doesnt exist", function (done) {
+      const Http = new XMLHttpRequest();
+      Http.open("GET", new URL(path.join(url.toString(), testData["getDutieTestData"]["dutieIdNotExists"])));
+      Http.send();
+      Http.onreadystatechange = (e) => {
+        if (Http.readyState == 4 && Http.status == 404) {
+          expect(Http.responseText).to.eql("no duty that answers the given parameters has been found");
+          done();
+        }
+      };
+    });
+
+    it("should return err when getting a get request for dutie with ileagal id", function (done) {
+      const Http = new XMLHttpRequest();
+      Http.open("GET", new URL(path.join(url.toString(),testData["getDutieTestData"]["dutieIdNotLegal"])));
+      Http.send();
+      Http.onreadystatechange = (e) => {
+        if (Http.readyState == 4 && Http.status == 404) {
+          expect(Http.responseText).to.eql("the id that was sent is not legal, it needs to be of 24 chars in alpha-numeric");
+          done();
+        }
+      };
+    });
+
+    it("should return a spesific duties json when recieving a get request to url /duties?name='name'", function (done) {
+      const Http = new XMLHttpRequest();
+      dutiesCollection.insertOne(testData["getDutieTestData"]["getByName"], function (err, resultInsert) {
+        Http.open("GET", url + "?name=" + testData["getDutieTestData"]["getByName"]["name"]);
+        Http.send();
+        Http.onreadystatechange = (e) => {
+          if (Http.readyState == 4 && Http.status == 200) {
+            dutiesCollection.find({
+              "name": testData["getDutieTestData"]["getByName"]["name"]
+            }).toArray(function (err, result) {
+              expect(Http.responseText).to.eql(JSON.stringify(result));
+              done();
+            });
+          }
+        };
+      });
+    });
+
+  });
+
 });
