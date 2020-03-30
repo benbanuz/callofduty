@@ -174,4 +174,59 @@ describe("duties api", function () {
     });
   });
 
+  describe("dutie DELETE", function () {
+    it("should delete spesific dutie json when recieving a DELETE  request to url /duties/id", function (doneIt) {
+      const Http = new XMLHttpRequest();
+      MongoClient.connect(mongoUrl, function (err, client) {
+        const db = client.db(dbName);
+        const collection = db.collection('duties');
+        collection.insertOne({
+          "name": "hagnash",
+          "location": "soosia",
+          "days": "7",
+          "constraints": "none",
+          "soldiersRequired": "2",
+          "value": "10",
+          "soldiers": []
+        }, function (err, resultInsert) {
+          Http.open("DELETE", url + "/" + resultInsert["insertedId"].toString());
+          Http.send();
+          Http.onreadystatechange = (e) => {
+            if (Http.readyState == 4 && Http.status == 200) {
+              collection.find({
+                "_id": resultInsert["insertedId"]
+              }).toArray(function (err, result) {
+                expect(result.length).to.eql(0);
+                if (result.length != 0) {
+                  collection.deleteOne({
+                    "_id": resultInsert["insertedId"]
+                  }, function (err, resultDelete) {
+                    client.close();
+                    doneIt();
+                  });
+                } else {
+                  client.close();
+                  doneIt();
+                }
+              });
+            }
+          };
+        });
+      });
+    });
+
+    it("should return err when getting a DELETE request for dutie that doesnt exist", function (doneIt) {
+      const Http = new XMLHttpRequest();
+      Http.open("DELETE", url + "/333333333333333333333333");
+      Http.send();
+      Http.onreadystatechange = (e) => {
+        if (Http.readyState == 4 && Http.status == 400) {
+          expect(Http.responseText).to.eql("dutie cannot be deleted");
+          doneIt();
+        }
+      };
+    });
+
+  });
+
 });
