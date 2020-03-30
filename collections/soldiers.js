@@ -33,4 +33,27 @@ function newSoldier(db, data, callback) {
   }
 }
 
+function getSoldier(db, name, id, callback) {
+  const collection = db.collection('soldiers');
+  let searchedParams = {};
+
+  if (name) {
+    searchedParams["name"] = name;
+  }
+  if (id) {
+    searchedParams["id"] = id;
+  }
+
+  collection.find(searchedParams).toArray(function (err, docs) {
+    if (docs.length <= 0 && (name || id)) {
+      callback("no soldier that answers the given parameters has been found", null, 404);
+    } else if (name || (!(name) && !(id))) {
+      callback(err, JSON.stringify(docs), null);
+    } else {
+      callback(err, JSON.stringify(docs[0]), null);
+    }
+  });
+}
+
 module.exports.newSoldier = newSoldier;
+module.exports.getSoldier = getSoldier;

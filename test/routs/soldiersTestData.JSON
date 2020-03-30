@@ -21,5 +21,20 @@
       "name": "lior",
       "rank": "segen"
     }
+  },
+  "getSoldierTestData": {
+    "getById": {
+      "id": "8145643",
+      "name": "john",
+      "rank": "segen",
+      "limitations": ["yeshiva"]
+    },
+    "getByIdErr": "/3333333",
+    "getByName": {
+      "id": "8145643",
+      "name": "john",
+      "rank": "segen",
+      "limitations": ["yeshiva"]
+    }
   }
 }
