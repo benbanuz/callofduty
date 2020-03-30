@@ -84,6 +84,43 @@ function deleteDutie(id) {
   });
 }
 
+function updateDutie(data, id) {
+  const resHandler = require("../start").server.getResHandler();
+  const collection = require("../start").dutiesCollection;
+
+  if (utils.isIdLegal(id, resHandler)) {
+    return;
+  }
+
+  let leagalKeys = ["name", "location", "days", "constraints", "soldiersRequired", "value", "soldiers"];
+  if (!Object.keys(data).every(key => leagalKeys.indexOf(key) > -1)) {
+    resHandler.notValidData("ileagal properties to update, only keys that can be updated are (name,location,days,constrains,soldiersRequired,value,soldiers)");
+    return;
+  }
+
+  collection.find({
+    "_id": objectId(id)
+  }).toArray(function (err, doc) {
+    let exist = (doc.length == 1);
+    let notScheduled = (exist && (doc[0]["soldiers"].length == 0));
+
+    if (notScheduled) {
+      collection.updateOne({
+        "_id": objectId(id)
+      }, {
+        $set: data
+      }, function (err, result) {
+        resHandler.success();
+      });
+    } else if (exist && !notScheduled) {
+      resHandler.notValidData("the specified dutie to update is already scheduled");
+    } else {
+      resHandler.routeNotFound("the specified dutie to update does not exist");
+    }
+  });
+}
+
 module.exports.newDutie = newDutie;
 module.exports.getDutie = getDutie;
 module.exports.deleteDutie = deleteDutie;
+module.exports.updateDutie = updateDutie;
