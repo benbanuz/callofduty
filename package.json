@@ -4,12 +4,15 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "make test"
+    "test": "mocha ./test/routs/soldiersTest.js && mocha ./test/routs/dutiesTest.js && mocha ./test/routs/justiceBoardTest.js"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "async": "^3.2.0",
+    "chai": "^4.2.0",
     "mocha": "^7.1.1",
-    "mongodb": "^3.5.5"
+    "mongodb": "^3.5.5",
+    "xmlhttprequest": "^1.8.0"
   }
 }
