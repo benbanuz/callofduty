@@ -136,7 +136,64 @@ function updateDutie(data, id, callback) {
   }
 }
 
+
+function schedule(id, callback) {
+  jbRoute.showBoard(function (err, board) {
+    board = JSON.parse(board);
+    board = board.sort(function (a, b) {
+      return a.score > b.score;
+    });
+    MongoClient.connect(url, function (err, client) {
+      assert.equal(null, err);
+      const db = client.db(dbName);
+      const dutiesCollection = db.collection('duties');
+      const soldiersCollection = db.collection('soldiers');
+
+      dutiesCollection.find({
+        "_id": ObjectId(id)
+      }).toArray(function (err, doc) {
+        let numSoldiersToAssign = Number(doc[0]["soldiersRequired"]) - doc[0]["soldiers"].length;
+        async.forEachOf(board, (soldier, key, doneElement) => {
+          soldiersCollection.find({
+            "id": soldier["id"]
+          }).toArray(function (err, fullSoldier) {
+            if (!(numSoldiersToAssign <= 0 || doc[0]["constraints"].some(function (element, index, array) {
+                return fullSoldier[0]["limitations"].includes(element);
+              }))) {
+              numSoldiersToAssign -= 1;
+              soldiersCollection.updateOne({
+                "id": soldier["id"]
+              }, {
+                $push: {
+                  "duties": doc[0]["_id"]
+                }
+              }, function (err, result) {
+                dutiesCollection.updateOne({
+                    "_id": ObjectId(id)
+                  }, {
+                    $push: {
+                      "soldiers": soldier["id"]
+                    }
+                  },
+                  function (err, result) {
+                    doneElement();
+                  });
+              });
+            } else {
+              doneElement();
+            }
+          });
+        }, err => {
+          client.close();
+          callback(err, null);
+        });
+      });
+    });
+  });
+}
+
 module.exports.newDutie = newDutie;
 module.exports.getDutie = getDutie;
 module.exports.deleteDutie = deleteDutie;
 module.exports.updateDutie = updateDutie;
+module.exports.schedule = schedule;

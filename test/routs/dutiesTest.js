@@ -401,4 +401,216 @@ describe("duties api", function () {
 
   });
 
+  describe("dutie PUT", function () {
+    it("should schedule a soldier to a dutie when recieving a PUT request to the url /duties/[id]/schedule", function (doneIt) {
+      const Http = new XMLHttpRequest();
+      MongoClient.connect(mongoUrl, function (err, client) {
+        const db = client.db(dbName);
+        const dutiesCollection = db.collection('duties');
+        const soldiersCollection = db.collection('soldiers');
+        dutiesCollection.insertOne({
+          "name": "hagnash",
+          "location": "soosia",
+          "days": "7",
+          "constraints": [],
+          "soldiersRequired": "2",
+          "value": "10",
+          "soldiers": []
+        }, function (err, resultInsert) {
+          soldiersCollection.insertMany([{
+            id: "8411494",
+            name: "ben",
+            rank: "kama",
+            limitations: [],
+            duties: []
+          }, {
+            id: "1234567",
+            name: "ben",
+            rank: "kama",
+            limitations: [],
+            duties: []
+          }], function (err, result) {
+            Http.open("PUT", url + "/" + resultInsert["insertedId"].toString() + "/schedule");
+            Http.send();
+            Http.onreadystatechange = (e) => {
+              if (Http.readyState == 4 && Http.status == 200) {
+                soldiersCollection.find({}).toArray(function (err, findRes) {
+                  expect(findRes[0]["duties"][0].toString()).to.eql(resultInsert["insertedId"].toString());
+                  expect(findRes[1]["duties"][0].toString()).to.eql(resultInsert["insertedId"].toString());
+                  dutiesCollection.find({}).toArray(function (err, dutiesFindRes) {
+                    expect(dutiesFindRes[0]["soldiers"].includes("8411494")).to.eql(true);
+                    expect(dutiesFindRes[0]["soldiers"].includes("1234567")).to.eql(true);
+                    soldiersCollection.deleteMany({}, function (err, result) {
+                      dutiesCollection.deleteMany({}, function (err, result) {
+                        client.close();
+                        doneIt();
+                      });
+                    });
+                  });
+                });
+              }
+            };
+          });
+        });
+      });
+    });
+
+    it("should schedule a soldier with less score to a dutie when recieving a PUT request to the url /duties/[id]/schedule", function (doneIt) {
+      const Http = new XMLHttpRequest();
+      MongoClient.connect(mongoUrl, function (err, client) {
+        const db = client.db(dbName);
+        const dutiesCollection = db.collection('duties');
+        const soldiersCollection = db.collection('soldiers');
+        dutiesCollection.insertMany([{
+          "name": "hagnash",
+          "location": "soosia",
+          "days": "7",
+          "constraints": [],
+          "soldiersRequired": "1",
+          "value": "10",
+          "soldiers": ["8411494"]
+        }, {
+          "name": "hagnash",
+          "location": "soosia",
+          "days": "7",
+          "constraints": [],
+          "soldiersRequired": "1",
+          "value": "10",
+          "soldiers": []
+        }], function (err, resultInsert) {
+          soldiersCollection.insertMany([{
+            id: "8411494",
+            name: "ben",
+            rank: "kama",
+            limitations: [],
+            duties: [resultInsert["insertedIds"]['0']]
+          }, {
+            id: "1234567",
+            name: "ben",
+            rank: "kama",
+            limitations: [],
+            duties: []
+          }], function (err, result) {
+            Http.open("PUT", url + "/" + resultInsert["insertedIds"]['1'].toString() + "/schedule");
+            Http.send();
+            Http.onreadystatechange = (e) => {
+              if (Http.readyState == 4 && Http.status == 200) {
+                soldiersCollection.find({}).toArray(function (err, findRes) {
+                  expect(findRes[0]["duties"].length).to.eql(1);
+                  expect(findRes[1]["duties"].length).to.eql(1);
+                  expect(findRes[1]["duties"][0].toString()).to.eql(resultInsert["insertedIds"]['1'].toString());
+                  soldiersCollection.deleteMany({}, function (err, result) {
+                    dutiesCollection.deleteMany({}, function (err, result) {
+                      client.close();
+                      doneIt();
+                    });
+                  });
+                });
+              }
+            };
+          });
+        });
+      });
+    });
+
+    it("should not schedule a soldier with limitations to a dutie that has them in constraints when recieving a PUT request to the url /duties/[id]/schedule", function (doneIt) {
+      const Http = new XMLHttpRequest();
+      MongoClient.connect(mongoUrl, function (err, client) {
+        const db = client.db(dbName);
+        const dutiesCollection = db.collection('duties');
+        const soldiersCollection = db.collection('soldiers');
+        dutiesCollection.insertOne({
+          "name": "hagnash",
+          "location": "soosia",
+          "days": "7",
+          "constraints": ["yeshiva"],
+          "soldiersRequired": "2",
+          "value": "10",
+          "soldiers": []
+        }, function (err, resultInsert) {
+          soldiersCollection.insertMany([{
+            "id": "8411494",
+            "name": "ben",
+            "rank": "kama",
+            "limitations": ["yeshiva"],
+            "duties": []
+          }, {
+            "id": "1234567",
+            "name": "ben",
+            "rank": "kama",
+            "limitations": [],
+            "duties": []
+          }], function (err, result) {
+            Http.open("PUT", url + "/" + resultInsert["insertedId"].toString() + "/schedule");
+            Http.send();
+            Http.onreadystatechange = (e) => {
+              if (Http.readyState == 4 && Http.status == 200) {
+                soldiersCollection.find({}).toArray(function (err, findRes) {
+                  expect(findRes[0]["duties"].length).to.eql(0);
+                  expect(findRes[1]["duties"][0].toString()).to.eql(resultInsert["insertedId"].toString());
+                  soldiersCollection.deleteMany({}, function (err, result) {
+                    dutiesCollection.deleteMany({}, function (err, result) {
+                      client.close();
+                      doneIt();
+                    });
+                  });
+                });
+              }
+            };
+          });
+        });
+      });
+    });
+
+    it("should not schedule a dutie that is already scheduled when recieving a PUT request to the url /duties/[id]/schedule", function (doneIt) {
+      const Http = new XMLHttpRequest();
+      MongoClient.connect(mongoUrl, function (err, client) {
+        const db = client.db(dbName);
+        const dutiesCollection = db.collection('duties');
+        const soldiersCollection = db.collection('soldiers');
+        dutiesCollection.insertOne({
+          "name": "hagnash",
+          "location": "soosia",
+          "days": "7",
+          "constraints": [],
+          "soldiersRequired": "1",
+          "value": "10",
+          "soldiers": ["8411494"]
+        }, function (err, resultInsert) {
+          soldiersCollection.insertMany([{
+            "id": "8411494",
+            "name": "ben",
+            "rank": "kama",
+            "limitations": ["yeshiva"],
+            "duties": [resultInsert["insertedId"]]
+          }, {
+            "id": "1234567",
+            "name": "ben",
+            "rank": "kama",
+            "limitations": [],
+            "duties": []
+          }], function (err, result) {
+            Http.open("PUT", url + "/" + resultInsert["insertedId"].toString() + "/schedule");
+            Http.send();
+            Http.onreadystatechange = (e) => {
+              if (Http.readyState == 4 && Http.status == 200) {
+                soldiersCollection.find({}).toArray(function (err, findRes) {
+                  expect(findRes[0]["duties"].length).to.eql(1);
+                  expect(findRes[1]["duties"].length).to.eql(0);
+                  soldiersCollection.deleteMany({}, function (err, result) {
+                    dutiesCollection.deleteMany({}, function (err, result) {
+                      client.close();
+                      doneIt();
+                    });
+                  });
+                });
+              }
+            };
+          });
+        });
+      });
+    });
+
+  });
+
 });
