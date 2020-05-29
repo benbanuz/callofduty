@@ -338,4 +338,105 @@ describe("duties api", function () {
 
   });
 
+  describe("dutie PATCH", function () {
+
+    it("should update a specific duties json when recieving a patch request to url /duties/[id]", function (done) {
+      const Http = new XMLHttpRequest();
+      dutiesCollection.insertOne(testData["updateDutieTestData"]["testSuccess"]["insertedDutie"], function (err, resultInsert) {
+        Http.open("PATCH", new URL(path.join(url.toString(), resultInsert["insertedId"].toString())));
+        Http.send(JSON.stringify(testData["updateDutieTestData"]["testSuccess"]["updateProp"]));
+        Http.onreadystatechange = (e) => {
+          if (Http.readyState == 4 && Http.status == 200) {
+            dutiesCollection.find({
+              "_id": resultInsert["insertedId"]
+            }).toArray(function (err, result) {
+              expect(testData["updateDutieTestData"]["testSuccess"]["updateProp"]["name"]).to.eql(result[0]["name"]);
+              done();
+            });
+          }
+        };
+      });
+    });
+
+    it("should return an err when recieving a patch request to the url duties/[id] to a not existing dutie", function (done) {
+      const Http = new XMLHttpRequest();
+      Http.open("PATCH", new URL(path.join(url.toString(), testData["updateDutieTestData"]["dutieNotExistErr"])));
+      Http.send();
+      Http.onreadystatechange = (e) => {
+        if (Http.readyState == 4 && Http.status == 404) {
+          expect(Http.responseText).to.eql("the specified dutie to update does not exist");
+          done();
+        }
+      };
+    });
+
+    it("should return an err when recieving a patch request to the url duties/[id] with ilegal id", function (done) {
+      const Http = new XMLHttpRequest();
+      Http.open("PATCH", new URL(path.join(url.toString(), testData["updateDutieTestData"]["ilegalIdErr"])));
+      Http.send();
+      Http.onreadystatechange = (e) => {
+        if (Http.readyState == 4 && Http.status == 404) {
+          expect(Http.responseText).to.eql("the id that was sent is not legal, it needs to be of 24 chars in alpha-numeric");
+          done();
+        }
+      };
+    });
+
+    it("should return an err and not update the dutie json when recieving a patch request to the url duties/[id] with not a valid property", function (done) {
+      const Http = new XMLHttpRequest();
+      dutiesCollection.insertOne(testData["updateDutieTestData"]["ilegalProp"]["insertedDutie"], function (err, resultInsert) {
+        Http.open("PATCH", new URL(path.join(url.toString(), resultInsert["insertedId"].toString())));
+        Http.send(JSON.stringify(testData["updateDutieTestData"]["ilegalProp"]["notValidProp"]));
+        Http.onreadystatechange = (e) => {
+          if (Http.readyState == 4 && Http.status == 400) {
+            dutiesCollection.find({
+              "_id": resultInsert["insertedId"]
+            }).toArray(function (err, result) {
+              expect(Http.responseText).to.eql("ileagal properties to update, only keys that can be updated are (name,location,days,constrains,soldiersRequired,value,soldiers)");
+              expect(!(result[0]["notValid"])).to.eql(true);
+              done();
+            });
+          }
+        };
+      });
+    });
+
+    it("should return an err and not update the dutie json when recieving a patch request to the url duties/[id] with _id property", function (done) {
+      const Http = new XMLHttpRequest();
+      dutiesCollection.insertOne(testData["updateDutieTestData"]["updateIdErr"]["insertedDutie"], function (err, resultInsert) {
+        Http.open("PATCH", new URL(path.join(url.toString(), resultInsert["insertedId"].toString())));
+        Http.send(JSON.stringify(testData["updateDutieTestData"]["updateIdErr"]["updatedProp"]));
+        Http.onreadystatechange = (e) => {
+          if (Http.readyState == 4 && Http.status == 400) {
+            dutiesCollection.find({
+              "_id": resultInsert["insertedId"]
+            }).toArray(function (err, result) {
+              expect(result.length > 0).to.eql(true);
+              expect(Http.responseText).to.eql("ileagal properties to update, only keys that can be updated are (name,location,days,constrains,soldiersRequired,value,soldiers)");
+              done();
+            });
+          }
+        };
+      });
+    });
+
+    it("should return an err and not update the dutie json when recieving a patch request to the url duties/[id] to a scheduled dutie", function (done) {
+      const Http = new XMLHttpRequest();
+      dutiesCollection.insertOne(testData["updateDutieTestData"]["scheduledDutieErr"]["insertedDutie"], function (err, resultInsert) {
+        Http.open("PATCH", new URL(path.join(url.toString(), resultInsert["insertedId"].toString())));
+        Http.send(JSON.stringify(testData["updateDutieTestData"]["scheduledDutieErr"]["updatedProp"]));
+        Http.onreadystatechange = (e) => {
+          if (Http.readyState == 4 && Http.status == 400) {
+            dutiesCollection.find({
+              "_id": resultInsert["insertedId"]
+            }).toArray(function (err, result) {
+              expect(Http.responseText).to.eql("the specified dutie to update is already scheduled");
+              expect(result[0]["name"]).to.eql(testData["updateDutieTestData"]["scheduledDutieErr"]["insertedDutie"]["name"]);
+              done();
+            });
+          }
+        };
+      });
+    });
+  });
 });

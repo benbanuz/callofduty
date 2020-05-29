@@ -124,5 +124,65 @@
       "value": "10",
       "soldiers": ["8411494"]
     }
+  },
+  "updateDutieTestData": {
+    "testSuccess": {
+      "insertedDutie": {
+        "name": "hagnash",
+        "location": "soosia",
+        "days": "7",
+        "constraints": "none",
+        "soldiersRequired": "2",
+        "value": "10",
+        "soldiers": []
+      },
+      "updateProp": {
+        "name": "haha i changed the name"
+      }
+    },
+    "dutieNotExistErr": "/333333333333333333333333",
+    "ilegalIdErr": "/banana",
+    "ilegalProp": {
+      "insertedDutie": {
+        "name": "hagnash",
+        "location": "soosia",
+        "days": "7",
+        "constraints": "none",
+        "soldiersRequired": "2",
+        "value": "10",
+        "soldiers": []
+      },
+      "notValidProp": {
+        "notValid": "haha cant change the name"
+      }
+    },
+    "updateIdErr": {
+      "insertedDutie": {
+        "name": "hagnash",
+        "location": "soosia",
+        "days": "7",
+        "constraints": "none",
+        "soldiersRequired": "2",
+        "value": "10",
+        "soldiers": []
+      },
+      "updatedProp": {
+        "_id": "333333333333333333333333"
+      }
+    },
+    "scheduledDutieErr": {
+      "insertedDutie": {
+        "name": "hagnash",
+        "location": "soosia",
+        "days": "7",
+        "constraints": "none",
+        "soldiersRequired": "2",
+        "value": "10",
+        "soldiers": ["8411494"]
+      },
+      "updatedProp": {
+        "name": "haha cant change the name"
+      }
+    }
   }
 }
