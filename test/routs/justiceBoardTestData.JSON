@@ -1,0 +1,50 @@
+{
+  "getCorrectJusticeBoard": {
+    "soldiers": [{
+      "id": "8411494",
+      "name": "ben",
+      "rank": "kama",
+      "limitations": [],
+      "duties": []
+    }, {
+      "id": "1234567",
+      "name": "ben",
+      "rank": "kama",
+      "limitations": [],
+      "duties": []
+    }, {
+      "id": "7654321",
+      "name": "ben",
+      "rank": "kama",
+      "limitations": [],
+      "duties": []
+    }],
+    "duties": [{
+      "name": "hagnash",
+      "location": "sosia",
+      "days": "7",
+      "constraints": ["yeshiva"],
+      "soldiersRequired": "3",
+      "value": "20",
+      "soldiers": ["8411494", "1234567", "7654321"]
+    }, {
+      "name": "hagnash",
+      "location": "sosia",
+      "days": "7",
+      "constraints": ["yeshiva"],
+      "soldiersRequired": "1",
+      "value": "20",
+      "soldiers": ["8411494"]
+    }],
+    "expectedResult": [{
+      "id": "8411494",
+      "score": 40
+    }, {
+      "id": "1234567",
+      "score": 20
+    }, {
+      "id": "7654321",
+      "score": 20
+    }]
+  }
+}
