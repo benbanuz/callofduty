@@ -1,0 +1,71 @@
+{
+  "insertDutieTestData": {
+    "testSuccess": {
+      "name": "hagnash",
+      "location": "sosia",
+      "days": "7",
+      "constraints": ["yeshiva"],
+      "soldiersRequired": "3",
+      "value": "20"
+    },
+    "testNoNameErr": {
+      "location": "sosia",
+      "days": "7",
+      "constraints": ["yeshiva"],
+      "soldiersRequired": "3",
+      "value": "20"
+    },
+    "testNoLocationErr": {
+      "name": "hagnash",
+      "days": "7",
+      "constraints": ["yeshiva"],
+      "soldiersRequired": "3",
+      "value": "20"
+    },
+    "testNoDaysErr": {
+      "name": "hagnash",
+      "location": "sosia",
+      "constraints": ["yeshiva"],
+      "soldiersRequired": "3",
+      "value": "20"
+    },
+    "testNoConstraintsErr": {
+      "name": "hagnash",
+      "location": "sosia",
+      "days": "7",
+      "soldiersRequired": "3",
+      "value": "20"
+    },
+    "testNoNumSoldiersErr": {
+      "name": "hagnash",
+      "location": "sosia",
+      "days": "7",
+      "constraints": ["yeshiva"],
+      "value": "20"
+    },
+    "testNoValueErr": {
+      "name": "hagnash",
+      "location": "sosia",
+      "days": "7",
+      "constraints": ["yeshiva"],
+      "soldiersRequired": "3"
+    },
+    "testBadConstraintsErr": {
+      "name": "hagnash",
+      "location": "sosia",
+      "days": "7",
+      "constraints": "yeshiva",
+      "soldiersRequired": "3",
+      "value": "20"
+    },
+    "testExtraFieldsErr": {
+      "name": "hagnash",
+      "location": "sosia",
+      "days": "7",
+      "constraints": ["yeshiva"],
+      "soldiersRequired": "3",
+      "value": "20",
+      "shoeSize": "43"
+    }
+  }
+}
