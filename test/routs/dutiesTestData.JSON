@@ -184,5 +184,111 @@
         "name": "haha cant change the name"
       }
     }
+  },
+  "scheduleDutieTestData": {
+    "testSuccess": {
+      "dutie": {
+        "name": "hagnash",
+        "location": "soosia",
+        "days": "7",
+        "constraints": [],
+        "soldiersRequired": "2",
+        "value": "10",
+        "soldiers": []
+      },
+      "soldiers": [{
+        "id": "8411494",
+        "name": "ben",
+        "rank": "kama",
+        "limitations": [],
+        "duties": []
+      }, {
+        "id": "1234567",
+        "name": "ben",
+        "rank": "kama",
+        "limitations": [],
+        "duties": []
+      }]
+    },
+    "testJustifiedSched": {
+      "duties": [{
+        "name": "hagnash",
+        "location": "soosia",
+        "days": "7",
+        "constraints": [],
+        "soldiersRequired": "1",
+        "value": "10",
+        "soldiers": ["8411494"]
+      }, {
+        "name": "hagnash",
+        "location": "soosia",
+        "days": "7",
+        "constraints": [],
+        "soldiersRequired": "1",
+        "value": "10",
+        "soldiers": []
+      }],
+      "soldiers": [{
+        "id": "8411494",
+        "name": "ben",
+        "rank": "kama",
+        "limitations": [],
+        "duties": []
+      }, {
+        "id": "1234567",
+        "name": "ben",
+        "rank": "kama",
+        "limitations": [],
+        "duties": []
+      }]
+    },
+    "testSchedWithConstraints": {
+      "dutie": {
+        "name": "hagnash",
+        "location": "soosia",
+        "days": "7",
+        "constraints": ["yeshiva"],
+        "soldiersRequired": "2",
+        "value": "10",
+        "soldiers": []
+      },
+      "soldiers": [{
+        "id": "8411494",
+        "name": "ben",
+        "rank": "kama",
+        "limitations": ["yeshiva"],
+        "duties": []
+      }, {
+        "id": "1234567",
+        "name": "ben",
+        "rank": "kama",
+        "limitations": [],
+        "duties": []
+      }]
+    },
+    "testAlreadyScheduled": {
+      "dutie": {
+        "name": "hagnash",
+        "location": "soosia",
+        "days": "7",
+        "constraints": [],
+        "soldiersRequired": "1",
+        "value": "10",
+        "soldiers": ["8411494"]
+      },
+      "soldiers": [{
+        "id": "8411494",
+        "name": "ben",
+        "rank": "kama",
+        "limitations": ["yeshiva"],
+        "duties": []
+      }, {
+        "id": "1234567",
+        "name": "ben",
+        "rank": "kama",
+        "limitations": [],
+        "duties": []
+      }]
+    }
   }
 }

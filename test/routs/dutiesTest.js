@@ -439,4 +439,92 @@ describe("duties api", function () {
       });
     });
   });
+
+  describe("dutie PUT", function () {
+    it("should schedule a soldier to a dutie when recieving a PUT request to the url /duties/[id]/schedule", function (done) {
+      const Http = new XMLHttpRequest()
+      dutiesCollection.insertOne(testData["scheduleDutieTestData"]["testSuccess"]["dutie"], function (err, resultInsert) {
+        soldiersCollection.insertMany(testData["scheduleDutieTestData"]["testSuccess"]["soldiers"], function (err, result) {
+          Http.open("PUT", new URL(path.join(url.toString(), resultInsert["insertedId"].toString() + "/schedule")));
+          Http.send();
+          Http.onreadystatechange = (e) => {
+            if (Http.readyState == 4 && Http.status == 200) {
+              soldiersCollection.find({}).toArray(function (err, findRes) {
+                expect(findRes[0]["duties"][0].toString()).to.eql(resultInsert["insertedId"].toString());
+                expect(findRes[1]["duties"][0].toString()).to.eql(resultInsert["insertedId"].toString());
+                dutiesCollection.find({}).toArray(function (err, dutiesFindRes) {
+                  expect(dutiesFindRes[0]["soldiers"].includes(testData["scheduleDutieTestData"]["testSuccess"]["soldiers"][0]["id"])).to.eql(true);
+                  expect(dutiesFindRes[0]["soldiers"].includes(testData["scheduleDutieTestData"]["testSuccess"]["soldiers"][1]["id"])).to.eql(true);
+                  done();
+                });
+              });
+            }
+          };
+        });
+      });
+
+    });
+
+    it("should schedule a soldier with less score to a dutie when recieving a PUT request to the url /duties/[id]/schedule", function (done) {
+      const Http = new XMLHttpRequest();
+      dutiesCollection.insertMany(testData["scheduleDutieTestData"]["testJustifiedSched"]["duties"], function (err, resultInsert) {
+        testData["scheduleDutieTestData"]["testJustifiedSched"]["soldiers"][0]["duties"].push(resultInsert["insertedIds"]['0']);
+        soldiersCollection.insertMany(testData["scheduleDutieTestData"]["testJustifiedSched"]["soldiers"], function (err, result) {
+          Http.open("PUT", new URL(path.join(url.toString(), resultInsert["insertedIds"]['1'].toString() + "/schedule")));
+          Http.send();
+          Http.onreadystatechange = (e) => {
+            if (Http.readyState == 4 && Http.status == 200) {
+              soldiersCollection.find({}).toArray(function (err, findRes) {
+                expect(findRes[0]["duties"].length).to.eql(1);
+                expect(findRes[1]["duties"].length).to.eql(1);
+                expect(findRes[1]["duties"][0].toString()).to.eql(resultInsert["insertedIds"]['1'].toString());
+                done();
+              });
+            }
+          };
+        });
+      });
+
+    });
+
+    it("should not schedule a soldier with limitations to a dutie that has them in constraints when recieving a PUT request to the url /duties/[id]/schedule", function (done) {
+      const Http = new XMLHttpRequest();
+      dutiesCollection.insertOne(testData["scheduleDutieTestData"]["testSchedWithConstraints"]["dutie"], function (err, resultInsert) {
+        soldiersCollection.insertMany(testData["scheduleDutieTestData"]["testSchedWithConstraints"]["soldiers"], function (err, result) {
+          Http.open("PUT", new URL(path.join(url.toString(), resultInsert["insertedId"].toString() + "/schedule")));
+          Http.send();
+          Http.onreadystatechange = (e) => {
+            if (Http.readyState == 4 && Http.status == 200) {
+              soldiersCollection.find({}).toArray(function (err, findRes) {
+                expect(findRes[0]["duties"].length).to.eql(0);
+                expect(findRes[1]["duties"][0].toString()).to.eql(resultInsert["insertedId"].toString());
+                done();
+              });
+            }
+          };
+        });
+      });
+    });
+
+    it("should not schedule a dutie that is already scheduled when recieving a PUT request to the url /duties/[id]/schedule", function (done) {
+      const Http = new XMLHttpRequest();
+      dutiesCollection.insertOne(testData["scheduleDutieTestData"]["testAlreadyScheduled"]["dutie"], function (err, resultInsert) {
+        testData["scheduleDutieTestData"]["testAlreadyScheduled"]["soldiers"][0]["duties"].push(resultInsert["insertedId"]);
+        soldiersCollection.insertMany(testData["scheduleDutieTestData"]["testAlreadyScheduled"]["soldiers"], function (err, result) {
+          Http.open("PUT", new URL(path.join(url.toString(), resultInsert["insertedId"].toString() + "/schedule")));
+          Http.send();
+          Http.onreadystatechange = (e) => {
+            if (Http.readyState == 4 && Http.status == 200) {
+              soldiersCollection.find({}).toArray(function (err, findRes) {
+                expect(findRes[0]["duties"].length).to.eql(1);
+                expect(findRes[1]["duties"].length).to.eql(0);
+                done();
+              });
+            }
+          };
+        });
+      });
+    });
+
+  });
 });

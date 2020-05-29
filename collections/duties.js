@@ -1,5 +1,6 @@
 const objectId = require("mongodb").ObjectId;
 const utils = require("../utility/utility");
+const async = require("async");
 
 function newDutie(data) {
   const collection = require("../start").dutiesCollection;
@@ -120,7 +121,89 @@ function updateDutie(data, id) {
   });
 }
 
+function updateCollections(soldier, id, doc, doneElement) {
+  const soldiersCollection = require("../start").soldiersCollecetion;
+  const dutiesCollection = require("../start").dutiesCollection;
+
+  async.parallel([
+    function (callback) {
+      soldiersCollection.updateOne({
+        "id": soldier["id"]
+      }, {
+        $push: {
+          "duties": doc["_id"]
+        }
+      }, function (err, result) {
+        callback();
+      });
+    },
+    function (callback) {
+      dutiesCollection.updateOne({
+          "_id": objectId(id)
+        }, {
+          $push: {
+            "soldiers": soldier["id"]
+          }
+        },
+        function (err, result) {
+          callback();
+        });
+    }
+  ], doneElement);
+}
+
+function schedule(id) {
+  const resHandler = require("../start").server.getResHandler();
+  const soldiersCollection = require("../start").soldiersCollecetion;
+  const dutiesCollection = require("../start").dutiesCollection;
+  const justiceBoardRoute = require("../routes/justiceBoard")
+
+  async.waterfall([
+    function getBoard(done) {
+      justiceBoardRoute.getJusticeBoard(function (board) {
+        done(null, board);
+      });
+    },
+    function getDutie(board, done) {
+      board = board.sort(function (a, b) {
+        return a.score > b.score;
+      });
+
+      dutiesCollection.find({
+        "_id": objectId(id)
+      }).toArray(function (err, dutieToFill) {
+        done(null, board, dutieToFill[0]);
+      });
+    },
+    function assignSoldiers(board, dutieToFill, done) {
+      let numSoldiersToAssign = Number(dutieToFill["soldiersRequired"]) - dutieToFill["soldiers"].length;
+
+      async.forEachOf(board, (soldier, key, doneElement) => {
+        soldiersCollection.find({
+          "id": soldier["id"]
+        }).toArray(function (err, fullSoldier) {
+          let canSoldierDoIt = dutieToFill["constraints"].some(function (element, index, array) {
+            return fullSoldier[0]["limitations"].includes(element);
+          });
+
+          if (!(numSoldiersToAssign <= 0 || canSoldierDoIt)) {
+            numSoldiersToAssign -= 1;
+            updateCollections(soldier, id, dutieToFill, doneElement);
+          } else {
+            doneElement();
+          }
+        });
+      }, err => {
+        done();
+      });
+    }
+  ], function (err, res) {
+    resHandler.success();
+  });
+}
+
 module.exports.newDutie = newDutie;
 module.exports.getDutie = getDutie;
 module.exports.deleteDutie = deleteDutie;
 module.exports.updateDutie = updateDutie;
+module.exports.scheduleDutie = schedule;
