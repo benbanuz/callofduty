@@ -102,5 +102,27 @@
       "soldiersRequired": "2",
       "value": "10"
     }
+  },
+  "deleteDutieTestData": {
+    "testSuccess": {
+      "name": "hagnash",
+      "location": "soosia",
+      "days": "7",
+      "constraints": "none",
+      "soldiersRequired": "2",
+      "value": "10",
+      "soldiers": []
+    },
+    "testDutieNotExist": "/333333333333333333333333",
+    "testIdNotLegal": "/banana",
+    "testDutyIsAssigned": {
+      "name": "hagnash",
+      "location": "soosia",
+      "days": "7",
+      "constraints": "none",
+      "soldiersRequired": "2",
+      "value": "10",
+      "soldiers": ["8411494"]
+    }
   }
 }
